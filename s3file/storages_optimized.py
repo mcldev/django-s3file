@@ -1,3 +1,4 @@
+from django.core.files.base import ContentFile
 from storages.backends.s3boto3 import S3Boto3Storage
 from storages.utils import clean_name
 
@@ -15,6 +16,10 @@ class S3OptimizedUploadStorage(S3Boto3Storage):
     """
 
     def _save(self, name, content):
+        if isinstance(content, ContentFile):
+            # If the content is a ContentFile, we can't copy it
+            return super()._save(name, content) # Use the default implementation
+
         # Basically copy the implementation of _save of S3Boto3Storage
         # and replace the obj.upload_fileobj with a copy function
         cleaned_name = clean_name(name)

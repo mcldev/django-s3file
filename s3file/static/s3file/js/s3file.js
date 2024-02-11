@@ -8,6 +8,7 @@
   }
 
   function waitForAllFiles (form) {
+    // console.log('Waiting for files to upload')
     if (window.uploading !== 0) {
       setTimeout(function () {
         waitForAllFiles(form)
@@ -68,6 +69,7 @@
 
   function uploadFiles (form, fileInput, name) {
     var url = fileInput.getAttribute('data-url')
+    // console.log('Uploading files... ' + url)
     fileInput.loaded = 0
     fileInput.total = 0
     var promises = Array.from(fileInput.files).map(function (file) {
@@ -139,6 +141,41 @@
     waitForAllFiles(form)
   }
 
+  function add_progress_bar(form) {
+    // Create a new div element
+    const progressDiv = document.createElement("div");
+    progressDiv.className = "progress";
+
+    // Create a child div for the progress bar
+    const progressBarDiv = document.createElement("div");
+    progressBarDiv.className = "progress-bar";
+    progressBarDiv.setAttribute("role", "progressbar");
+    progressBarDiv.style.width = "0%";
+    progressBarDiv.setAttribute("aria-valuenow", "0");
+    progressBarDiv.setAttribute("aria-valuemin", "0");
+    progressBarDiv.setAttribute("aria-valuemax", "100");
+    progressBarDiv.textContent = "0%";
+
+    // Append the progress bar div to the progress div
+    progressDiv.appendChild(progressBarDiv);
+
+  // Insert the progress bar before the form
+  form.parentNode.insertBefore(progressDiv, form);
+  }
+
+  function update_progress_bar(form) {
+    var progressBar = document.getElementsByClassName('progress-bar')[0]
+
+    form.addEventListener('progress', function (event) {
+        // event.detail.progress is a value between 0 and 1
+        var percent = Math.round(event.detail.progress * 100)
+
+        progressBar.setAttribute('style', 'width:' + percent + '%')
+        progressBar.setAttribute('aria-valuenow', percent)
+        progressBar.innerText = percent + '%'
+    })
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     var forms = Array.from(document.querySelectorAll('.s3file')).map(function (input) {
       return input.closest('form')
@@ -153,6 +190,10 @@
       Array.from(submitButtons).forEach(function (submitButton) {
         submitButton.addEventListener('click', clickSubmit)
       })
+      add_progress_bar(form);
+      update_progress_bar(form);
     })
+
+
   })
 })()
